@@ -303,24 +303,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = Command::new("gitcal")
         .about("A CLI tool for calendar visualization")
         .arg(arg!(--username <NAME> "GitHub username (defaults to token owner)"))
-        .arg(arg!(--block "use block icons"))
-        .arg(arg!(--circle "use circle icons"))
-        .arg(arg!(--half "use block icons without spaces"))
+        .arg(arg!(--block "uUe block icons"))
+        .arg(arg!(--half "Use block icons without spaces"))
+        .arg(arg!(--circle "Use circle icons"))
         .group(
             ArgGroup::new("shape")
                 .args(["block", "circle", "half"])
                 .multiple(false)
                 .required(false),
         )
-        .arg(arg!(--base <HEX> "set base color"))
-        .arg(arg!(--text <HEX> "set text color"))
-        .arg(arg!(--color0 <HEX> "set color for no contributions"))
-        .arg(arg!(--color1 <HEX> "set color for first quartile"))
-        .arg(arg!(--color2 <HEX> "set color for second quartile"))
-        .arg(arg!(--color3 <HEX> "set color for third quartile"))
-        .arg(arg!(--color4 <HEX> "set color for fourth quartile"))
-        .arg(arg!(--year "display the past year's worth of data"))
-        .arg(arg!(--month "display the past month's worth of data"))
+        .arg(arg!(--base <HEX> "Set base color"))
+        .arg(arg!(--text <HEX> "Set text color"))
+        .arg(arg!(--color0 <HEX> "Set color for no contributions"))
+        .arg(arg!(--color1 <HEX> "Set color for first quartile"))
+        .arg(arg!(--color2 <HEX> "Set color for second quartile"))
+        .arg(arg!(--color3 <HEX> "Set color for third quartile"))
+        .arg(arg!(--color4 <HEX> "Set color for fourth quartile"))
+        .arg(arg!(--year "Display the past year's worth of data"))
+        .arg(arg!(--month "Display the past month's worth of data"))
         .group(
             ArgGroup::new("time")
                 .args(["year", "month"])
@@ -328,8 +328,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .required(false),
         )
         .arg(arg!(--token <GITHUB_TOKEN> "GitHub PAT token (uses $GITHUB_TOKEN if not specified)"))
-        .arg(arg!(--"hide-days" "hide day-of-the-week string"))
-        .arg(arg!(--"hide-months" "hide months in header"))
+        .arg(arg!(--"hide-days" "Hide day-of-the-week string"))
+        .arg(arg!(--"hide-months" "Hide months in header"))
         .get_matches();
     let username = matches.get_one::<String>("username");
     let token = if let Some(tkn) = matches.get_one::<String>("token") {
