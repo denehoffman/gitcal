@@ -302,6 +302,7 @@ impl Display for Calendar {
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = Command::new("gitcal")
         .about("A CLI tool for calendar visualization")
+        .arg(arg!(--username <NAME> "GitHub username (defaults to token owner)"))
         .arg(arg!(--block "use block icons"))
         .arg(arg!(--circle "use circle icons"))
         .arg(arg!(--half "use block icons without spaces"))
@@ -330,6 +331,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(arg!(--"hide-days" "hide day-of-the-week string"))
         .arg(arg!(--"hide-months" "hide months in header"))
         .get_matches();
+    let username = matches.get_one::<String>("username");
     let token = if let Some(tkn) = matches.get_one::<String>("token") {
         tkn.to_owned()
     } else {
@@ -390,11 +392,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let query = format!(
         r#"
         query {{
-          viewer {{
+          {} {{
             contributionsCollection(from: "{}", to: "{}") {{
               contributionCalendar {{
-                totalContributions
-                colors
                 weeks {{
                     contributionDays {{ 
                         weekday
@@ -410,7 +410,13 @@ fn main() -> Result<(), Box<dyn Error>> {
           }}
         }}
         "#,
-        time_start_formatted, now_formatted
+        if let Some(name) = username {
+            format!(r#"user(login: "{}")"#, name)
+        } else {
+            "viewer".to_string()
+        },
+        time_start_formatted,
+        now_formatted
     );
 
     let value = serde_json::json!({ "query": query });
@@ -424,7 +430,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             .send()?
             .text()?,
     )?;
-    let cal_data = &resp["data"]["viewer"]["contributionsCollection"]["contributionCalendar"];
+    let cal_data = &resp["data"][if username.is_none() { "viewer" } else { "user" }]
+        ["contributionsCollection"]["contributionCalendar"];
     let weeks = cal_data["weeks"].as_array().unwrap();
     let mut data: Vec<Vec<GithubQuartiles>> =
         vec![vec![GithubQuartiles::default(); weeks.len()]; 7];
