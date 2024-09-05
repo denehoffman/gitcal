@@ -2,6 +2,12 @@
 name = "gitcal"
 version = "0.1.0"
 edition = "2021"
+description = "A CLI tool for calendar visualization"
+documentation = "https://docs.rs/gitcal"
+readme = "README.md"
+homepage = "https://github.com/denehoffman/gitcal"
+repository = "https://github.com/denehoffman/gitcal"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 chrono = "0.4.38"
