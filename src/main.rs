@@ -319,11 +319,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(arg!(--color2 <HEX> "Set color for second quartile"))
         .arg(arg!(--color3 <HEX> "Set color for third quartile"))
         .arg(arg!(--color4 <HEX> "Set color for fourth quartile"))
-        .arg(arg!(--year "Display the past year's worth of data"))
+        .arg(arg!(--ytd "Display the past year's worth of data"))
         .arg(arg!(--month "Display the past month's worth of data"))
         .group(
             ArgGroup::new("time")
-                .args(["year", "month"])
+                .args(["ytd", "month"])
                 .multiple(false)
                 .required(false),
         )
@@ -377,14 +377,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let now = Local::now();
     let now_formatted = now.format("%Y-%m-%dT%H:%M:%S");
-    let time_start_formatted = if matches.get_flag("year") {
-        now - Duration::days(365)
+    let time_start_formatted = if matches.get_flag("ytd") {
+        Local.with_ymd_and_hms(now.year(), 1, 1, 0, 0, 0).unwrap()
     } else if matches.get_flag("month") {
         Local
             .with_ymd_and_hms(now.year(), now.month(), 1, 0, 0, 0)
             .unwrap()
     } else {
-        Local.with_ymd_and_hms(now.year(), 1, 1, 0, 0, 0).unwrap()
+        now - Duration::days(365)
     }
     .format("%Y-%m-%dT%H:%M:%S");
 

@@ -25,7 +25,7 @@ Options:
       --color2 <HEX>          Set color for second quartile
       --color3 <HEX>          Set color for third quartile
       --color4 <HEX>          Set color for fourth quartile
-      --year                  Display the past year's worth of data
+      --ytd                   Display the past year's worth of data
       --month                 Display the past month's worth of data
       --token <GITHUB_TOKEN>  GitHub PAT token (uses $GITHUB_TOKEN if not specified)
       --hide-days             Hide day-of-the-week string
@@ -68,4 +68,4 @@ The `--hide-days` and `--hide-months` arguments can be used to hide the respecti
 
 ## Time
 
-By default, `gitcal` will display the year-to-date information. However, the `--year` and `--month` arguments can be used to instead use the past 365 days and the days since the beginning of the month respectively.
+By default, `gitcal` will display past 365 days of information. However, the `--ytd` and `--month` arguments can be used to instead use the year-to-date starting at January 1st or the days since the beginning of the month respectively.
