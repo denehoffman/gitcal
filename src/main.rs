@@ -1,7 +1,7 @@
-use chrono::{Datelike, Duration, Local, TimeZone};
 use clap::{arg, ArgGroup, Command};
 use colored::{Color, ColoredString, Colorize};
 use hex_color::{HexColor, ParseHexColorError};
+use jiff::{ToSpan, Zoned};
 use reqwest::{self, blocking::Client};
 use serde_json::Value;
 use std::{error::Error, fmt::Display};
@@ -375,18 +375,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         palette = palette.with_color4(hex.to_owned())?;
     }
 
-    let now = Local::now();
-    let now_formatted = now.format("%Y-%m-%dT%H:%M:%S");
-    let time_start_formatted = if matches.get_flag("ytd") {
-        Local.with_ymd_and_hms(now.year(), 1, 1, 0, 0, 0).unwrap()
+    let now = Zoned::now();
+    let time_start = if matches.get_flag("ytd") {
+        now.first_of_year()?
     } else if matches.get_flag("month") {
-        Local
-            .with_ymd_and_hms(now.year(), now.month(), 1, 0, 0, 0)
-            .unwrap()
+        now.first_of_month()?
     } else {
-        now - Duration::days(365)
-    }
-    .format("%Y-%m-%dT%H:%M:%S");
+        now.checked_sub(1.year())?
+    };
 
     let client = Client::new();
     let query = format!(
@@ -415,8 +411,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         } else {
             "viewer".to_string()
         },
-        time_start_formatted,
-        now_formatted
+        time_start.datetime(),
+        now.datetime()
     );
 
     let value = serde_json::json!({ "query": query });
