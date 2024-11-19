@@ -69,3 +69,7 @@ The `--hide-days` and `--hide-months` arguments can be used to hide the respecti
 ## Time
 
 By default, `gitcal` will display past 365 days of information. However, the `--ytd` and `--month` arguments can be used to instead use the year-to-date starting at January 1st or the days since the beginning of the month respectively.
+
+# See Also
+
+Check out [ghfetch](https://github.com/SafarSoFar/ghfetch) for a similar command which also prints GitHub info in a `fetch`-style output!
