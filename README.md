@@ -68,3 +68,7 @@ The `--hide-days` and `--hide-months` arguments can be used to hide the respecti
 ## Time
 
 By default, `gitcal` will display past 365 days of information. However, the `--timespan` argument can be used to input a human-readable timespan (as measured relative to the current date). See [`jiff`'s documentation](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) for some examples of valid inputs. For example `--timespan '3 months'` will give you the past three months of data. I plan to eventually add start and end date arguments, if anyone wants to do it with a PR, feel free.
+
+# See Also
+
+Check out [ghfetch](https://github.com/SafarSoFar/ghfetch) for a similar command which also prints GitHub info in a `fetch`-style output!
