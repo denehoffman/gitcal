@@ -1,7 +1,7 @@
 use clap::{arg, ArgGroup, Command};
 use colored::{Color, ColoredString, Colorize};
 use hex_color::{HexColor, ParseHexColorError};
-use jiff::{ToSpan, Zoned};
+use jiff::{Span, ToSpan, Zoned};
 use reqwest::{self, blocking::Client};
 use serde_json::Value;
 use std::{error::Error, fmt::Display};
@@ -54,67 +54,40 @@ impl Default for Palette {
     }
 }
 impl Palette {
-    fn with_text(mut self, hex: String) -> Result<Self, ParseHexColorError> {
+    fn from_hex(hex: String) -> Result<Color, ParseHexColorError> {
         let color = HexColor::parse(&hex)?;
-        self.text = Color::TrueColor {
+        Ok(Color::TrueColor {
             r: color.r,
             g: color.g,
             b: color.b,
-        };
+        })
+    }
+    fn with_text(mut self, hex: String) -> Result<Self, ParseHexColorError> {
+        self.text = Palette::from_hex(hex)?;
         Ok(self)
     }
     fn with_base(mut self, hex: String) -> Result<Self, ParseHexColorError> {
-        let color = HexColor::parse(&hex)?;
-        self.base = Color::TrueColor {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-        };
+        self.base = Palette::from_hex(hex)?;
         Ok(self)
     }
     fn with_color0(mut self, hex: String) -> Result<Self, ParseHexColorError> {
-        let color = HexColor::parse(&hex)?;
-        self.color0 = Color::TrueColor {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-        };
+        self.color0 = Palette::from_hex(hex)?;
         Ok(self)
     }
     fn with_color1(mut self, hex: String) -> Result<Self, ParseHexColorError> {
-        let color = HexColor::parse(&hex)?;
-        self.color1 = Color::TrueColor {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-        };
+        self.color1 = Palette::from_hex(hex)?;
         Ok(self)
     }
     fn with_color2(mut self, hex: String) -> Result<Self, ParseHexColorError> {
-        let color = HexColor::parse(&hex)?;
-        self.color2 = Color::TrueColor {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-        };
+        self.color2 = Palette::from_hex(hex)?;
         Ok(self)
     }
     fn with_color3(mut self, hex: String) -> Result<Self, ParseHexColorError> {
-        let color = HexColor::parse(&hex)?;
-        self.color3 = Color::TrueColor {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-        };
+        self.color3 = Palette::from_hex(hex)?;
         Ok(self)
     }
     fn with_color4(mut self, hex: String) -> Result<Self, ParseHexColorError> {
-        let color = HexColor::parse(&hex)?;
-        self.color4 = Color::TrueColor {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-        };
+        self.color4 = Palette::from_hex(hex)?;
         Ok(self)
     }
 }
@@ -319,14 +292,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(arg!(--color2 <HEX> "Set color for second quartile"))
         .arg(arg!(--color3 <HEX> "Set color for third quartile"))
         .arg(arg!(--color4 <HEX> "Set color for fourth quartile"))
-        .arg(arg!(--ytd "Display the past year's worth of data"))
-        .arg(arg!(--month "Display the past month's worth of data"))
-        .group(
-            ArgGroup::new("time")
-                .args(["ytd", "month"])
-                .multiple(false)
-                .required(false),
-        )
+        .arg(arg!(--timespan <TIME_SPAN> "Display data since given time span to current date"))
         .arg(arg!(--token <GITHUB_TOKEN> "GitHub PAT token (uses $GITHUB_TOKEN if not specified)"))
         .arg(arg!(--"hide-days" "Hide day-of-the-week string"))
         .arg(arg!(--"hide-months" "Hide months in header"))
@@ -352,34 +318,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         DisplayStyle::SmallSquare
     };
-    let mut palette = Palette::default();
-    if let Some(hex) = matches.get_one::<String>("base") {
-        palette = palette.with_base(hex.to_owned())?;
-    }
-    if let Some(hex) = matches.get_one::<String>("text") {
-        palette = palette.with_text(hex.to_owned())?;
-    }
-    if let Some(hex) = matches.get_one::<String>("color0") {
-        palette = palette.with_color0(hex.to_owned())?;
-    }
-    if let Some(hex) = matches.get_one::<String>("color1") {
-        palette = palette.with_color1(hex.to_owned())?;
-    }
-    if let Some(hex) = matches.get_one::<String>("color2") {
-        palette = palette.with_color2(hex.to_owned())?;
-    }
-    if let Some(hex) = matches.get_one::<String>("color3") {
-        palette = palette.with_color3(hex.to_owned())?;
-    }
-    if let Some(hex) = matches.get_one::<String>("color4") {
-        palette = palette.with_color4(hex.to_owned())?;
-    }
 
     let now = Zoned::now();
-    let time_start = if matches.get_flag("ytd") {
-        now.first_of_year()?
-    } else if matches.get_flag("month") {
-        now.first_of_month()?
+    let time_start = if let Some(timespan) = matches.get_one::<String>("timespan") {
+        let span: Span = timespan.parse()?;
+        now.checked_sub(span)?
     } else {
         now.checked_sub(1.year())?
     };
@@ -426,6 +369,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .send()?
             .text()?,
     )?;
+
     let cal_data = &resp["data"][if username.is_none() { "viewer" } else { "user" }]
         ["contributionsCollection"]["contributionCalendar"];
     let weeks = cal_data["weeks"].as_array().unwrap();
@@ -449,6 +393,31 @@ fn main() -> Result<(), Box<dyn Error>> {
             )
         })
         .collect();
+
+    let mut palette = Palette::default();
+
+    if let Some(hex) = matches.get_one::<String>("base") {
+        palette = palette.with_base(hex.to_owned())?;
+    }
+    if let Some(hex) = matches.get_one::<String>("text") {
+        palette = palette.with_text(hex.to_owned())?;
+    }
+    if let Some(hex) = matches.get_one::<String>("color0") {
+        palette = palette.with_color0(hex.to_owned())?;
+    }
+    if let Some(hex) = matches.get_one::<String>("color1") {
+        palette = palette.with_color1(hex.to_owned())?;
+    }
+    if let Some(hex) = matches.get_one::<String>("color2") {
+        palette = palette.with_color2(hex.to_owned())?;
+    }
+    if let Some(hex) = matches.get_one::<String>("color3") {
+        palette = palette.with_color3(hex.to_owned())?;
+    }
+    if let Some(hex) = matches.get_one::<String>("color4") {
+        palette = palette.with_color4(hex.to_owned())?;
+    }
+
     let calendar = Calendar::default()
         .with_data(data)
         .with_months(month_data)

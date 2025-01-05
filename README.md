@@ -25,8 +25,7 @@ Options:
       --color2 <HEX>          Set color for second quartile
       --color3 <HEX>          Set color for third quartile
       --color4 <HEX>          Set color for fourth quartile
-      --ytd                   Display the past year's worth of data
-      --month                 Display the past month's worth of data
+      --timespan <TIME_SPAN>  Display data since given time span to current date
       --token <GITHUB_TOKEN>  GitHub PAT token (uses $GITHUB_TOKEN if not specified)
       --hide-days             Hide day-of-the-week string
       --hide-months           Hide months in header
@@ -68,4 +67,4 @@ The `--hide-days` and `--hide-months` arguments can be used to hide the respecti
 
 ## Time
 
-By default, `gitcal` will display past 365 days of information. However, the `--ytd` and `--month` arguments can be used to instead use the year-to-date starting at January 1st or the days since the beginning of the month respectively.
+By default, `gitcal` will display past 365 days of information. However, the `--timespan` argument can be used to input a human-readable timespan (as measured relative to the current date). See [`jiff`'s documentation](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) for some examples of valid inputs. For example `--timespan '3 months'` will give you the past three months of data. I plan to eventually add start and end date arguments, if anyone wants to do it with a PR, feel free.
