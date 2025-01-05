@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/denehoffman/gitcal/compare/v0.1.1...v0.1.2) - 2025-01-05
+
+### Added
+
+- add  argument and remove similar args
+
+### Fixed
+
+- merge README
+- switch to [jiff](https://github.com/BurntSushi/jiff)
+
 ## [0.1.1](https://github.com/denehoffman/gitcal/compare/v0.1.0...v0.1.1) - 2024-09-06
 
 ### Other
